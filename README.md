@@ -13,3 +13,7 @@ Current progress:
 - effect.flatMap example
 - Error handling with Data.TaggedError
 - Effect.gen
+- Effect/schema
+
+TODO:
+https://www.typeonce.dev/course/effect-beginners-complete-getting-started/configuration-with-effect-config/what-are-configuration-variables
