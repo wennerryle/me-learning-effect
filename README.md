@@ -6,5 +6,7 @@ By Sandro Maglione.
 
 The tasks will be separated by git branches.
 
+Author uses `tsx`, but I prefer `jiti` over `tsx`.
+
 Current progress:
-**TODO**
+- Hello world
