@@ -1,10 +1,10 @@
-import { Console, Effect, pipe } from "effect";
+import { Effect } from "effect";
 import { FetchError, JsonError } from "./errors";
 
 const fetchRequest = Effect.tryPromise({
-    try: () => fetch("https://pokeapi.co/api/v2/pokemon/garchomp124/"),
+    try: () => fetch("https://pokeapi.co/api/v2/pokemon/garchomp"),
     catch: () => new FetchError(),
-}).pipe(Effect.filterOrFail((resp) => resp.ok, () => new FetchError()));
+});
 
 const jsonResponse = (response: Response) =>
     Effect.tryPromise({
@@ -12,20 +12,20 @@ const jsonResponse = (response: Response) =>
         catch: () => new JsonError(),
     });
 
-const main = pipe(
-    fetchRequest,
-    Effect.flatMap(jsonResponse),
-    Effect.catchTags({
-        FetchError: () =>
-            Effect.succeed(
-                "Cannot check the API. Please check internet connection",
-            ),
-        JsonError: () =>
-            Effect.succeed(
-                "Cannot parse Garchomp data. Maybe API is outdated.",
-            ),
-    }),
-    Effect.flatMap(Console.log),
-);
+const program = Effect.gen(function* () {
+    const response = yield* fetchRequest;
+    if (!response.ok) {
+        return yield* new FetchError();
+    }
 
-Effect.runPromise(main);
+    return yield* jsonResponse(response);
+});
+
+const main = program.pipe(
+    Effect.catchTags({
+        FetchError: () => Effect.succeed("Fetch error"),
+        JsonError: () => Effect.succeed("Json error"),
+    })
+)
+
+Effect.runPromise(main).then(console.log)
