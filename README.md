@@ -12,6 +12,4 @@ Current progress:
 - Hello world (main branch)
 - effect.flatMap example
 - Error handling with Data.TaggedError
-
-Todo:
-https://www.typeonce.dev/course/effect-beginners-complete-getting-started/gen-composition-using-generators/gen-write-linear-code-with-effect
+- Effect.gen
