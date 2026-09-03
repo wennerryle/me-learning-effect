@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { FetchError, JsonError } from "./errors";
+import { decodePokemon, Pokemon } from "./schema";
 
 const fetchRequest = Effect.tryPromise({
     try: () => fetch("https://pokeapi.co/api/v2/pokemon/garchomp"),
@@ -18,14 +19,23 @@ const program = Effect.gen(function* () {
         return yield* new FetchError();
     }
 
-    return yield* jsonResponse(response);
+    const unknownJson = yield* jsonResponse(response);
+    return yield* decodePokemon(unknownJson);
 });
 
 const main = program.pipe(
     Effect.catchTags({
         FetchError: () => Effect.succeed("Fetch error"),
         JsonError: () => Effect.succeed("Json error"),
+        ParseError: () => Effect.succeed("Parse error")
     })
 )
 
-Effect.runPromise(main).then(console.log)
+Effect.runPromise(main).then((it) => {
+    if (typeof it === "string") {
+        console.log(it);
+    } else {
+        console.log(it);
+        console.log(`pokemon height is: ${it.formatHeight}`)
+    }
+})
