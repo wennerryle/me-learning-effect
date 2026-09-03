@@ -9,4 +9,5 @@ The tasks will be separated by git branches.
 Author uses `tsx`, but I prefer `jiti` over `tsx`.
 
 Current progress:
-- Hello world
+- Hello world (main branch)
+- effect.flatMap example
