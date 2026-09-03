@@ -11,3 +11,4 @@ Author uses `tsx`, but I prefer `jiti` over `tsx`.
 Current progress:
 - Hello world (main branch)
 - effect.flatMap example
+- Error handling with Data.TaggedError
