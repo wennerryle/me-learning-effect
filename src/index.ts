@@ -9,12 +9,12 @@ const jsonResponse = (response: Response) =>
 
 const pokemonStats = Effect.flatMap(
     fetchRequest,
-    response => jsonResponse(response)
-);
+    jsonResponse,
+)
 
 const main = Effect.flatMap(
     pokemonStats,
-    it => Console.log(it)
+    Console.log
 )
 
 Effect.runPromise(main);
