@@ -15,6 +15,7 @@ Current progress:
 - Effect.gen
 - Effect/schema
 - Config
+- Effect services
 
 
 TODO:
