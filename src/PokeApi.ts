@@ -1,23 +1,23 @@
-import { Config, Context, Effect, ParseResult, Schema } from "effect";
-import { ConfigError } from "effect/ConfigError";
+import { Context, Effect, Layer, Schema } from "effect";
 import { Pokemon } from "./schemas";
 import { FetchError, JsonError } from "./errors";
+import { PokemonCollection } from "./PokemonCollection";
+import { BuildPokeApiUrl } from "./BuildPokeApiUrl";
 
-export interface PokeApiImpl {
-  readonly getPokemon: Effect.Effect<
-    Pokemon,
-    FetchError | JsonError | ParseResult.ParseError | ConfigError
-  >;
-}
+const make = Effect.gen(function* () {
+  const pokemonCollection = yield* PokemonCollection;
+  const buildPokeApiUrl = yield* BuildPokeApiUrl;
 
-export class PokeApi extends Context.Tag("PokeApi")<PokeApi, PokeApiImpl>() {
-  static readonly Live = PokeApi.of({
+  return {
     getPokemon: Effect.gen(function* () {
-      const baseUrl = yield* Config.string("BASE_URL");
+      const requestUrl = buildPokeApiUrl({
+        name: pokemonCollection[0],
+      });
+
       const response = yield* Effect.tryPromise({
-        try: () => fetch(new URL("/api/v2/pokemon/garchomp", baseUrl)),
+        try: () => fetch(requestUrl),
         catch: () => new FetchError(),
-      })
+      });
 
       if (!response.ok) {
         return yield* new FetchError();
@@ -26,9 +26,32 @@ export class PokeApi extends Context.Tag("PokeApi")<PokeApi, PokeApiImpl>() {
       const json = yield* Effect.tryPromise({
         try: () => response.json(),
         catch: () => new JsonError(),
-      })
+      });
 
       return yield* Schema.decodeUnknown(Pokemon)(json);
+    }),
+  };
+});
+
+export class PokeApi extends Context.Tag("PokeApi")<
+  PokeApi,
+  Effect.Effect.Success<typeof make>
+>() {
+  static readonly Live = Layer.effect(this, make).pipe(
+    Layer.provide(Layer.mergeAll(PokemonCollection.Default, BuildPokeApiUrl.Default)),
+  );
+
+  static readonly Mock = Layer.succeed(
+    this,
+    PokeApi.of({
+      getPokemon: Effect.succeed({
+        id: 1,
+        height: 10,
+        weight: 10,
+        name: "my-name",
+        order: 1,
+        formatHeight: "10cm"
+      })
     })
-  })
+  )
 }

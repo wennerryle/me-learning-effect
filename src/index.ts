@@ -1,12 +1,13 @@
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { PokeApi } from "./PokeApi";
 
 const program = Effect.gen(function* () {
   const pokeApi = yield* PokeApi;
-  return yield* pokeApi.getPokemon;
-});
 
-const runnable = program.pipe(Effect.provideService(PokeApi, PokeApi.Live))
+  return yield* pokeApi.getPokemon;
+})
+
+const runnable = program.pipe(Effect.provide(PokeApi.Mock));
 
 const main = runnable.pipe(
   Effect.catchTags({
@@ -15,7 +16,6 @@ const main = runnable.pipe(
     ParseError: () => Effect.succeed("Parse error"),
   }),
 );
-
 
 Effect.runPromise(main).then((it) => {
   if (typeof it === "string") {
