@@ -1,40 +1,27 @@
-import { Effect, Config, Schema } from "effect";
-import { FetchError, JsonError } from "./errors";
-import { Pokemon } from "./schemas";
+import { Effect } from "effect";
+import { PokeApi } from "./PokeApi";
 
-const getPokemon = Effect.gen(function* () {
-    const baseUrl = yield* Config.string("BASE_URL");
+const program = Effect.gen(function* () {
+  const pokeApi = yield* PokeApi;
+  return yield* pokeApi.getPokemon;
+});
 
-    const response = yield* Effect.tryPromise({
-        try: () => fetch(new URL("/api/v2/pokemon/garchomp", baseUrl)),
-        catch: () => new FetchError(),
-    });
+const runnable = program.pipe(Effect.provideService(PokeApi, PokeApi.Live))
 
-    if (!response.ok) {
-        return yield* new FetchError();
-    }
+const main = runnable.pipe(
+  Effect.catchTags({
+    FetchError: () => Effect.succeed("Fetch error"),
+    JsonError: () => Effect.succeed("Json error"),
+    ParseError: () => Effect.succeed("Parse error"),
+  }),
+);
 
-    const json = yield* Effect.tryPromise({
-        try: () => response.json(),
-        catch: () => new JsonError(),
-    })
-
-    return yield* Schema.decodeUnknown(Pokemon)(json);
-})
-
-const main = getPokemon.pipe(
-    Effect.catchTags({
-        FetchError: () => Effect.succeed("Fetch error"),
-        JsonError: () => Effect.succeed("Json error"),
-        ParseError: () => Effect.succeed("Parse error")
-    })
-)
 
 Effect.runPromise(main).then((it) => {
-    if (typeof it === "string") {
-        console.log(it);
-    } else {
-        console.log(it);
-        console.log(`pokemon height is: ${it.formatHeight}`)
-    }
-})
+  if (typeof it === "string") {
+    console.log(it);
+  } else {
+    console.log(it);
+    console.log(`pokemon height is: ${it.formatHeight}`);
+  }
+});
