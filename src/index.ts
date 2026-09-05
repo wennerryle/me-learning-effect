@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { FetchError, JsonError } from "./errors";
-import { decodePokemon, Pokemon } from "./schema";
+import { decodePokemon } from "./schema";
 
 const fetchRequest = Effect.tryPromise({
     try: () => fetch("https://pokeapi.co/api/v2/pokemon/garchomp"),
