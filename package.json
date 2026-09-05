@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "jiti ./src/index.ts"
+    "dev": "BASE_URL=https://pokeapi.co jiti ./src/index.ts"
   },
   "keywords": [],
   "author": "",

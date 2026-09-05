@@ -1,9 +1,11 @@
-import { Effect } from "effect";
+import { Effect, Config } from "effect";
 import { FetchError, JsonError } from "./errors";
 import { decodePokemon } from "./schema";
 
-const fetchRequest = Effect.tryPromise({
-    try: () => fetch("https://pokeapi.co/api/v2/pokemon/garchomp"),
+const config = Config.string("BASE_URL");
+
+const fetchRequest = (baseUrl: string) => Effect.tryPromise({
+    try: () => fetch(new URL(`/api/v2/pokemon/garchomp`, baseUrl)),
     catch: () => new FetchError(),
 });
 
@@ -14,7 +16,8 @@ const jsonResponse = (response: Response) =>
     });
 
 const program = Effect.gen(function* () {
-    const response = yield* fetchRequest;
+    const baseUrl = yield* config;
+    const response = yield* fetchRequest(baseUrl);
     if (!response.ok) {
         return yield* new FetchError();
     }
